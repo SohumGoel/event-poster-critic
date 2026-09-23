@@ -1,0 +1,7 @@
+torch
+torchvision
+transformers>=4.45
+scikit-learn==1.9.1
+joblib
+numpy
+pillow

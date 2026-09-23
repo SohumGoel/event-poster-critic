@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Poster Critic</title>
+<meta name="description" content="Upload a draft event poster and see how human judges would likely rate its alignment, overlap and white space.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #E9EBEF;
+    --sheet: #F7F8FA;
+    --ink: #1C2340;
+    --ink-soft: #545B78;
+    --rule: #CDD1DA;
+    --pink: #FF48B0;
+    --sun: #FFB511;
+    --green: #00A95C;
+    --blue: #0078BF;
+    --track: #D9DCE3;
+    --shadow: 0 1px 0 rgba(28,35,64,.06), 0 18px 40px -18px rgba(28,35,64,.35);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #171B2E; --sheet: #20253C; --ink: #EEF0F6; --ink-soft: #A3A9C2; --rule: #333A57;
+      --track: #2C3350; --blue: #4FB3F0; --shadow: 0 18px 40px -18px rgba(0,0,0,.7); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #171B2E; --sheet: #20253C; --ink: #EEF0F6; --ink-soft: #A3A9C2; --rule: #333A57;
+    --track: #2C3350; --blue: #4FB3F0; --shadow: 0 18px 40px -18px rgba(0,0,0,.7); color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 17px/1.55 "Hanken Grotesk", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 48px 24px 64px; }
+
+  /* Masthead */
+  header { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; padding-bottom: 28px; border-bottom: 2px solid var(--ink); }
+  h1 {
+    margin: 0; font: 900 clamp(56px, 9vw, 112px)/.86 "Big Shoulders Display", sans-serif;
+    letter-spacing: -.01em;
+  }
+  .lede { margin: 16px 0 0; max-width: 34em; color: var(--ink-soft); font-size: 18px; }
+  .inks { display: flex; gap: 6px; padding-bottom: 8px; }
+  .inks span { width: 22px; height: 22px; border-radius: 50%; mix-blend-mode: multiply; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .inks span { mix-blend-mode: screen; } }
+  @media (max-width: 600px) { header { grid-template-columns: 1fr; } .inks { display: none; } .proof { min-height: 360px; padding: 32px; } }
+  .inks span:nth-child(1) { background: var(--pink); }
+  .inks span:nth-child(2) { background: var(--sun); margin-left: -12px; }
+  .inks span:nth-child(3) { background: var(--blue); margin-left: -12px; }
+
+  /* Workspace */
+  .work { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 56px; margin-top: 40px; align-items: start; }
+  @media (max-width: 820px) { .work { grid-template-columns: 1fr; gap: 36px; } }
+
+  /* Proof: the poster with crop marks */
+  .proof {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    min-height: 520px; padding: 44px; background: var(--sheet); box-shadow: var(--shadow);
+    cursor: pointer; transition: outline-color .15s;
+    outline: 2px dashed transparent; outline-offset: -14px;
+  }
+  .proof:hover, .proof.over { outline-color: var(--blue); }
+  .proof:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+  .crop { position: absolute; width: 22px; height: 22px; border-color: var(--ink); border-style: solid; border-width: 0; opacity: .55; }
+  .crop.tl { top: 14px; left: 14px; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .crop.tr { top: 14px; right: 14px; border-top-width: 1.5px; border-right-width: 1.5px; }
+  .crop.bl { bottom: 14px; left: 14px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+  .crop.br { bottom: 14px; right: 14px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+  .proof img { display: block; max-width: 100%; max-height: 600px; box-shadow: 0 10px 30px -12px rgba(0,0,0,.45); }
+  .empty { text-align: center; }
+  .empty strong { display: block; font: 800 34px/1 "Big Shoulders Display", sans-serif; margin-bottom: 10px; }
+  .empty p { margin: 0 0 22px; color: var(--ink-soft); }
+  .btn {
+    display: inline-block; padding: 12px 22px; border-radius: 999px; background: var(--ink); color: var(--paper);
+    font: 600 16px/1 "Hanken Grotesk", sans-serif; border: 0; cursor: pointer;
+  }
+  .status { margin-top: 16px; font-size: 15px; color: var(--ink-soft); min-height: 24px; }
+  .load { height: 4px; background: var(--track); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .load div { height: 100%; width: 0; background: var(--blue); transition: width .3s; }
+  .load[hidden] { display: none; }
+
+  /* Scores */
+  .scores h2, .fixes h2 { font: 800 30px/1 "Big Shoulders Display", sans-serif; margin: 0 0 6px; }
+  .scale { margin: 0 0 8px; color: var(--ink-soft); font-size: 15px; }
+  .row { display: grid; grid-template-columns: 116px 1fr; gap: 20px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+  .num { font: 900 76px/.8 "Big Shoulders Display", sans-serif; font-variant-numeric: tabular-nums; color: var(--rule); }
+  .num small { font-size: 26px; font-weight: 800; color: var(--ink-soft); margin-left: 2px; }
+  .name { font-weight: 700; font-size: 19px; }
+  .verdict { color: var(--ink-soft); font-size: 15px; }
+  .bar { position: relative; height: 10px; background: var(--track); border-radius: 5px; margin-top: 10px; }
+  .bar i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 5px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+  .bar b { position: absolute; left: 55.5%; top: -5px; bottom: -5px; width: 2px; background: var(--ink); opacity: .5; }
+  .row.low .num { color: var(--pink); } .row.low .bar i { background: var(--pink); }
+  .row.mid .num { color: var(--sun); }  .row.mid .bar i { background: var(--sun); }
+  .row.good .num { color: var(--green); } .row.good .bar i { background: var(--green); }
+  .legend { margin: 12px 0 0; font-size: 14px; color: var(--ink-soft); }
+  .legend b { display: inline-block; width: 2px; height: 12px; background: var(--ink); opacity: .5; vertical-align: -1px; margin-right: 6px; }
+
+  .fixes { margin-top: 36px; }
+  .fixes ol { margin: 14px 0 0; padding: 0; list-style: none; counter-reset: fix; }
+  .fixes li { counter-increment: fix; position: relative; padding: 0 0 18px 48px; }
+  .fixes li::before {
+    content: counter(fix); position: absolute; left: 0; top: -4px;
+    font: 900 34px/1 "Big Shoulders Display", sans-serif; color: var(--pink);
+  }
+  .fixes li strong { display: block; }
+  .fixes li span { color: var(--ink-soft); }
+  .clean { margin-top: 14px; color: var(--ink-soft); }
+
+  /* How it works */
+  .how { margin-top: 72px; padding-top: 28px; border-top: 2px solid var(--ink); display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  @media (max-width: 820px) { .how { grid-template-columns: 1fr; gap: 20px; } }
+  .how h3 { font: 800 24px/1.1 "Big Shoulders Display", sans-serif; margin: 0 0 6px; }
+  .how p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+  .how a { color: var(--blue); }
+
+  @media (prefers-reduced-motion: reduce) { .bar i, .load div, .proof { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Event Poster Critic</h1>
+      <p class="lede">Drop in a draft of your event poster. You'll see how human judges would likely rate its alignment, overlap and white space, and what to fix before you print.</p>
+    </div>
+    <div class="inks" aria-hidden="true"><span></span><span></span><span></span></div>
+  </header>
+
+  <section class="work">
+    <div>
+      <label class="proof" id="drop" for="file" tabindex="0">
+        <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+        <div class="empty" id="empty">
+          <strong>Your poster goes here</strong>
+          <p>Drag an image onto this sheet, or pick one. PNG or JPG.</p>
+          <span class="btn">Choose a poster</span>
+        </div>
+      </label>
+      <input id="file" type="file" accept="image/*" hidden>
+      <div class="status" id="status" role="status">Loading the critic…</div>
+      <div class="load" id="load" hidden><div></div></div>
+    </div>
+
+    <div>
+      <div class="scores">
+        <h2>How judges would rate it</h2>
+        <p class="scale">Predicted average human rating, 1 to 10</p>
+        <div id="rows"></div>
+        <p class="legend"><b></b>Below 6 gets a fix</p>
+      </div>
+      <div class="fixes" id="feedback"></div>
+    </div>
+  </section>
+
+  <section class="how" aria-label="How it works">
+    <div>
+      <h3>1. Read the poster</h3>
+      <p>A frozen image model (<span id="bb">SigLIP</span>) turns your poster into 768 numbers that describe its layout, color and content.</p>
+    </div>
+    <div>
+      <h3>2. Predict human judgment</h3>
+      <p>Our regressors, trained on ratings from 60 judges in the <a href="https://huggingface.co/datasets/creative-graphic-design/GraphicDesignEvaluation">GraphicDesignEvaluation</a> dataset, predict each score.</p>
+    </div>
+    <div>
+      <h3>3. Stays on your device</h3>
+      <p>Everything runs in your browser, so your poster is never uploaded. It was trained on web graphics, so treat the scores as guidance.</p>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import * as T from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0";
+import { loadCritic } from "./critic.js";
+
+const PRINCIPLES = [
+  ["alignment", "Alignment", "Snap text and images to a shared grid or a common left edge."],
+  ["overlap", "Overlap", "Keep text off busy parts of images and give each block its own space."],
+  ["whitespace", "White space", "Add margins and breathing room, or cut content so nothing feels crammed."],
+];
+const $ = id => document.getElementById(id);
+let score = null, pending = null, threshold = 6;
+
+function verdict(v) {
+  if (v >= threshold) return ["good", "Judges would likely be happy with this"];
+  if (v >= threshold - 2) return ["mid", "Worth a second look"];
+  return ["low", "Fix this first"];
+}
+
+function renderRows(s) {
+  $("rows").innerHTML = PRINCIPLES.map(([key, name]) => {
+    const v = s ? s[key] : null;
+    const [cls, text] = s ? verdict(v) : ["", "Waiting for a poster"];
+    return `<div class="row ${cls}">
+      <div class="num">${s ? v.toFixed(1) : "–"}${s ? "<small>/10</small>" : ""}</div>
+      <div><div class="name">${name}</div><div class="verdict">${text}</div>
+        <div class="bar"><i style="width:${s ? ((v - 1) / 9) * 100 : 0}%"></i><b></b></div></div>
+    </div>`;
+  }).join("");
+}
+
+function renderFixes(s) {
+  const weak = PRINCIPLES.filter(([k]) => s[k] < threshold).sort((a, b) => s[a[0]] - s[b[0]]);
+  $("feedback").innerHTML = weak.length
+    ? `<h2>What to fix first</h2><ol>${weak.map(([k, name, tip]) =>
+        `<li><strong>${name} (${s[k].toFixed(1)})</strong><span>${tip}</span></li>`).join("")}</ol>`
+    : `<h2>Ready to print</h2><p class="clean">All three principles score ${threshold} or above.</p>`;
+}
+
+const loaded = {};
+function progress(p) {
+  if (p.status === "progress" && p.total) {
+    loaded[p.file] = [p.loaded, p.total];
+    const [a, b] = Object.values(loaded).reduce(([x, y], [l, t]) => [x + l, y + t], [0, 0]);
+    const pct = Math.round(100 * a / b);
+    $("load").hidden = false;
+    $("load").firstElementChild.style.width = pct + "%";
+    $("status").textContent = `Downloading the critic, first visit only (${pct}%)`;
+  }
+}
+
+async function run(file) {
+  const url = URL.createObjectURL(file);
+  $("drop").querySelector(".empty")?.remove();
+  $("drop").querySelector("img")?.remove();
+  $("drop").insertAdjacentHTML("beforeend", `<img src="${url}" alt="Your uploaded poster">`);
+  if (!score) { pending = file; $("status").textContent = "Got your poster. It'll be scored as soon as the critic finishes loading."; return; }
+  $("status").textContent = "Reading your poster…";
+  const s = await score(await T.RawImage.fromBlob(file));
+  renderRows(null);
+  requestAnimationFrame(() => requestAnimationFrame(() => { renderRows(s); renderFixes(s); }));
+  $("status").textContent = "Scored. Drop in another version to compare.";
+}
+
+renderRows(null);
+(async () => {
+  try {
+    const weights = await (await fetch("./weights.json")).json();
+    threshold = weights.threshold ?? 6;
+    $("bb").textContent = weights.backbone;
+    score = await loadCritic(T, weights, { progress });
+    $("load").hidden = true;
+    $("status").textContent = "Ready. Drop in a poster to score it.";
+    if (pending) run(pending);
+  } catch (e) {
+    $("status").textContent = "The critic couldn't load (" + e.message + "). Refresh the page to try again.";
+  }
+})();
+
+$("file").addEventListener("change", e => e.target.files[0] && run(e.target.files[0]));
+const drop = $("drop");
+drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } });
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); e.dataTransfer.files[0] && run(e.dataTransfer.files[0]); });
+</script>
+</body>
+</html>
