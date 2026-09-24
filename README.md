@@ -4,6 +4,8 @@ Upload a draft event poster and get predicted human ratings (1–10) for **align
 
 **Live demo:** https://huggingface.co/spaces/ssg1/event-poster-critic
 
+![Event Poster Critic scoring a poster](docs/screenshot.png)
+
 ## How it works
 ```
 poster → SigLIP (frozen) → 768 features → 3 trained regressors → 3 scores (1–10)
@@ -32,5 +34,4 @@ Both files hold the **same trained model** (SigLIP-B/16 features; MLP for alignm
 | `poster_critic.ipynb` | Training notebook (Colab, T4 GPU): data, model comparison, final model, deployment |
 | `space/` | The live Static Space (`index.html`, `critic.js`, `weights.json`) |
 | `app/` | Gradio version of the app (needs HF PRO to host). `app/model.joblib` is the trained model from the notebook (scikit-learn 1.9.1) |
-| `project.txt` | Assignment brief |
 | `qr_code.png` | QR code linking to the live demo |
